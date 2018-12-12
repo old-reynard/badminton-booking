@@ -1,68 +1,68 @@
 import 'package:flutter/material.dart';
 
-void main() => runApp(new MyApp());
+import 'auth.dart';
+import 'data/contract.dart';
+import 'package:badminton/calendar.dart';
 
-class MyApp extends StatelessWidget {
+
+void main() => runApp(new BadmintonBookingApp());
+
+class BadmintonBookingApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return new MaterialApp(
-      title: 'Flutter Demo',
-      theme: new ThemeData(
+    return MaterialApp(
+      title: BadStrings.appTitle,
+      theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: new MyHomePage(title: 'Flutter Demo Home Page'),
+      home: Root(auth: Auth()),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
+enum AuthStatus { notSignedIn, signedIn }
 
 
-  final String title;
+class Root extends StatefulWidget {
+  Root({Key key, this.auth}) : super(key: key);
+
+  final BaseAuth auth;
 
   @override
-  _MyHomePageState createState() => new _MyHomePageState();
+  State<Root> createState() => _RootState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _RootState extends State<Root> {
 
-  void _incrementCounter() {
+  AuthStatus status = AuthStatus.notSignedIn;
+
+
+  @override
+  void initState() {
+    super.initState();
+    widget.auth.currentUser().then((id) {
+      setState(() {
+        status = id == null ? AuthStatus.signedIn : AuthStatus.signedIn;
+        //todo : for debugging mode only, until sign-in is implemented
+      });
+    });
+  }
+
+  void _changeStatus(AuthStatus newStatus) {
     setState(() {
-      _counter++;
+      status = newStatus;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-
-    return new Scaffold(
-      appBar: new AppBar(
-
-        title: new Text(widget.title),
-      ),
-      body: new Center(
-
-        child: new Column(
-
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            new Text(
-              'You have pushed the button this many times:',
-            ),
-            new Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.display1,
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: new FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: new Icon(Icons.add),
-      ), 
-    );
+    switch (status) {
+      case AuthStatus.notSignedIn:
+        return CalendarPage(); //
+      case AuthStatus.signedIn:
+        return CalendarPage();
+      default:
+        return CalendarPage();
+    }
   }
 }
